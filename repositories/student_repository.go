@@ -1,3 +1,5 @@
+// 6609650491
+// Piyatida Reakdee
 package repositories
 
 import (
@@ -20,9 +22,16 @@ func (r *StudentRepository) GetAll() ([]models.Student, error) {
 	var students []models.Student
 	for rows.Next() {
 		var s models.Student
-		rows.Scan(&s.Id, &s.Name, &s.Major, &s.GPA)
+		if err := rows.Scan(&s.Id, &s.Name, &s.Major, &s.GPA); err != nil {
+			return nil, err
+		}
+
 		students = append(students, s)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return students, nil
 }
 
@@ -33,8 +42,7 @@ func (r *StudentRepository) GetByID(id string) (*models.Student, error) {
 	)
 
 	var s models.Student
-	err := row.Scan(&s.Id, &s.Name, &s.Major, &s.GPA)
-	if err != nil {
+	if err := row.Scan(&s.Id, &s.Name, &s.Major, &s.GPA); err != nil {
 		return nil, err
 	}
 	return &s, nil
@@ -46,4 +54,31 @@ func (r *StudentRepository) Create(s models.Student) error {
 		s.Id, s.Name, s.Major, s.GPA,
 	)
 	return err
+}
+
+func (r *StudentRepository) UpdateByID(id string, name string, major string, gpa float64) (bool, error) {
+	res, err := r.DB.Exec(
+		"UPDATE students SET name = ?, major = ?, gpa = ? WHERE id = ?",
+		name, major, gpa, id,
+	)
+	if err != nil {
+		return false, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
+}
+
+func (r *StudentRepository) DeleteByID(id string) (bool, error) {
+	res, err := r.DB.Exec("DELETE FROM students WHERE id = ?", id)
+	if err != nil {
+		return false, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
 }

@@ -1,3 +1,5 @@
+// 6609650491
+// Piyatida Reakdee
 package config
 
 import (
@@ -12,15 +14,17 @@ func InitDB() *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	db.Exec(`
-	CREATE TABLE IF NOT EXISTS students (
-		id TEXT PRIMARY KEY,
-		name TEXT,
-		major TEXT,
-		gpa REAL
-	)
-	`)
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS students (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            major TEXT,
+            gpa REAL NOT NULL
+        )
+    `)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return db
 }
